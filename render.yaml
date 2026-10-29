@@ -1,0 +1,38 @@
+# Render blueprint for the Cuota agent (the web app deploys to Vercel from frontend/).
+# New → Blueprint → pick this repo. Values marked sync: false are asked for on first deploy.
+services:
+  - type: web
+    name: cuota-agent
+    runtime: docker
+    plan: free
+    rootDir: agent
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL # Postgres backup of the SQLite file (the free plan has no disk)
+        fromDatabase:
+          name: cuota-db
+          property: connectionString
+      - key: AGENT_KEY
+        sync: false
+      - key: BUILDER_CODE
+        sync: false
+      - key: X402_KEY
+        sync: false
+      - key: CONTRACT
+        sync: false
+      - key: CONTRACT_FROM_BLOCK
+        sync: false
+      - key: AGENT_ID
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: BUY_BUDGET_USD_PER_DAY
+        value: "1.5"
+
+databases:
+  - name: cuota-db
+    plan: free
+    databaseName: cuota
