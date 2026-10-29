@@ -296,7 +296,7 @@ export class Engine {
   }
 }
 
-async function ensureAllowance(celo: Celo, token: Address, spender: Address, amount: bigint) {
+export async function ensureAllowance(celo: Celo, token: Address, spender: Address, amount: bigint) {
   const { reader, signer, account } = celo;
   const abi = [
     { type: "function", name: "allowance", stateMutability: "view", inputs: [{ type: "address" }, { type: "address" }], outputs: [{ type: "uint256" }] },
