@@ -1,0 +1,15 @@
+# The free Render plan sleeps after ~15 idle minutes, which would also pause the agent's
+# collection loop. Ping it every 10 minutes. Set the repository variable CUOTA_AGENT_URL.
+name: Keep the agent awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    if: ${{ vars.CUOTA_AGENT_URL != '' }}
+    steps:
+      - run: curl -fsS --max-time 120 "${{ vars.CUOTA_AGENT_URL }}/health"
