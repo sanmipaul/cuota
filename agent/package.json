@@ -1,0 +1,39 @@
+{
+  "name": "cuota-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cuota agent: inflation-indexed rent and subscriptions in wARS/wBRL on Celo",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning --env-file-if-exists=.env --import tsx src/main.ts",
+    "dev": "node --no-warnings=ExperimentalWarning --env-file-if-exists=.env --watch --import tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "deploy": "tsx --env-file-if-exists=.env scripts/deploy.ts",
+    "register": "tsx --env-file-if-exists=.env scripts/register.ts",
+    "tick": "node --no-warnings=ExperimentalWarning --env-file-if-exists=.env --import tsx scripts/tick.ts",
+    "e2e": "node --no-warnings=ExperimentalWarning --import tsx scripts/e2e-anvil.ts"
+  },
+  "dependencies": {
+    "@celo/attribution-tags": "^0.5.0",
+    "@hono/node-server": "^2.1.5",
+    "@x402/core": "^2.28.0",
+    "@x402/evm": "^2.28.0",
+    "@x402/fetch": "^2.28.0",
+    "@x402/hono": "^2.28.0",
+    "hono": "^4.13.14",
+    "pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "viem": "^2.57.11",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
