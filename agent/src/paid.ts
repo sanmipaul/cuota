@@ -6,10 +6,11 @@ import type { Celo } from "./celo.ts";
 import { now, type Db } from "./db.ts";
 
 /**
- * Cuota buys Chainstack RPC batches and Cencori completions through buy's gateway
- * (gateway.usebuy.ai, x402 v1 on "celo"). The agent answers each 402 itself, signing an
- * EIP-3009 authorization from its own wallet, so it runs on any server: the `buy` CLI's
- * keystore needs an OS keychain for mainnet keys, which hosts don't have.
+ * Cuota buys Chainstack RPC batches through buy's gateway (gateway.usebuy.ai, x402 v1 on
+ * "celo") and LLM completions from Agent402 (x402 v2 on eip155:42220, USDC only). The
+ * agent answers each 402 itself, signing an EIP-3009 authorization from its own wallet, so
+ * it runs on any server: the `buy` CLI's keystore needs an OS keychain for mainnet keys,
+ * which hosts don't have.
  *
  * Guards: a cap per call (refused before signing above it), a daily budget, and a token
  * the wallet can actually cover. Every payment is logged with its settlement tx.

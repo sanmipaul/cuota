@@ -2,12 +2,13 @@ import { now, type Db, type DraftRow } from "./db.ts";
 import { OverBudget, type Paid } from "./paid.ts";
 
 /**
- * Plain-language notices in the parties' language, written by Cencori through buy.
+ * Plain-language notices in the parties' language, written by an LLM on Agent402's nano
+ * chat tier (Cencori through buy served only maximo-atlas-1.3, which Cencori retired).
  * The facts are computed by the agent and passed in; the model only phrases them, and
  * every notice falls back to a fixed template when the model is unavailable.
  */
 
-const CENCORI = "https://gateway.usebuy.ai/cencori/v1/chat/completions";
+const LLM = "https://agent402.tools/v1/nano/chat/completions";
 const LANGUAGE: Record<DraftRow["locale"], string> = {
   "es-AR": "Spanish as spoken in Argentina (voseo, warm but precise)",
   "es-CO": "Spanish as spoken in Colombia",
@@ -46,10 +47,9 @@ export class Notices {
   private async phrase(n: NoticeFacts): Promise<string> {
     try {
       const res = await this.paid.post<{ choices?: { message?: { content?: string } }[] }>(
-        "cencori/inference",
-        CENCORI,
+        "agent402/chat-nano",
+        LLM,
         {
-          model: "maximo-atlas-1.3",
           max_tokens: 256,
           temperature: 0.3,
           messages: [
@@ -63,7 +63,7 @@ export class Notices {
             { role: "user", content: JSON.stringify({ type: n.kind, ...n.facts }) },
           ],
         },
-        0.01,
+        0.003,
         `${n.kind} notice`,
       );
       const text = res.body?.choices?.[0]?.message?.content?.trim();
