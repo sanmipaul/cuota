@@ -47,7 +47,7 @@ The contract enforces it: no charge above the per-adjustment cap or the ceiling 
 | Service | Route | Price | Used for |
 |---|---|---|---|
 | Chainstack Celo RPC (via buy) | `gateway.usebuy.ai/chainstack/celo` | $0.01 per batch of up to 2,000 calls | amount, balance and allowance for every due agreement before collecting |
-| Cencori LLM (via buy) | `gateway.usebuy.ai/cencori/v1/chat/completions` | $0.01 | adjustment, reminder and receipt notices in the parties' language |
+| LLM chat completions (Agent402 nano tier) | `agent402.tools/v1/nano/chat/completions` | $0.003 | adjustment, reminder and receipt notices in the parties' language (it replaced Cencori via buy, whose only model was retired) |
 
 The agent pays these 402s itself with an x402 client signing from its wallet, in a stablecoin it holds enough of, with a cap per call and a daily budget. Every payment is logged with its settlement tx: `GET /api/paid-calls` (operator token).
 
@@ -68,7 +68,7 @@ agent/       TypeScript (Node ≥ 22.13), Hono, node:sqlite (backed up to Postgr
   src/engine.ts    the loop: sync → adjust → remind → collect → convert
   src/sync.ts      event-driven mirror of contract state
   src/rpc.ts       collection preflight in one paid Chainstack batch
-  src/notices.ts   Cencori-written notices with a template fallback
+  src/notices.ts   LLM-written notices with a template fallback
   src/fx.ts        Textile RFQ v2 taker (wFIAT → USD₮) plus market reference
   src/pay.ts       x402 USA₮ payment of a period, forwarded to the payee
   src/paid.ts      x402 client for paid services: cap, budget, token choice, receipts
@@ -107,7 +107,7 @@ npm run e2e                    # propose/accept → collect with conversion shar
 
 ### Deployment
 
-- **Agent and database:** Render blueprint (`render.yaml`) creates the agent from `agent/Dockerfile` and a free Postgres for its backup. `.github/workflows/keepalive.yml` pings `/health` every 10 minutes so the free instance doesn't sleep.
+- **Agent and database:** Render blueprint (`render.yaml`) creates the agent from `agent/Dockerfile` and a free Postgres for its backup. The agent pings its own public `/health` every 10 minutes so the free instance doesn't sleep; `.github/workflows/keepalive.yml` wakes it as a backup (GitHub runs it every few hours).
 - **Web app:** Vercel with root directory `frontend`, `CUOTA_AGENT_URL` and `NEXT_PUBLIC_BUILDER_CODE`. The production build fails without the agent URL.
 
 ## API

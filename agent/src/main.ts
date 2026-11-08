@@ -54,6 +54,12 @@ if (!env.AGENT_ID) log("AGENT_ID not set: register the ERC-8004 identity with `n
 // Drafts are written by the API between ticks: copy the database out every minute too.
 if (backup) setInterval(() => void backup.save(db).catch((err) => log("backup failed", { error: String(err).slice(0, 200) })), 60_000).unref();
 
+// Render's free plan sleeps after 15 idle minutes and wakes in about a minute. A request to
+// our own public URL goes through Render's edge, so it counts as traffic and keeps us up.
+if (process.env.RENDER) {
+  setInterval(() => void fetch(`${env.BASE_URL}/health`, { signal: AbortSignal.timeout(30_000) }).catch(() => {}), 10 * 60_000).unref();
+}
+
 // Hosts send SIGTERM before replacing the instance: take a last copy, then exit.
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.once(signal, () => {
