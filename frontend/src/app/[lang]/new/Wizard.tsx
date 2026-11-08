@@ -191,7 +191,18 @@ export function Wizard() {
               </Label>
             </div>
             <div className="sm:col-span-2">
-              <Label text={w.payer} hint={w.payerHint}>
+              <Label
+                text={w.payer}
+                hint={
+                  f.payer && !isAddress(f.payer) ? (
+                    <span className="text-danger">{w.payerInvalid}</span>
+                  ) : f.payer && !payerOk ? (
+                    <span className="text-danger">{w.payerIsYou}</span>
+                  ) : (
+                    w.payerHint
+                  )
+                }
+              >
                 <TextInput value={f.payer} onChange={(e) => set("payer", e.target.value.trim())} className="num" spellCheck={false} />
               </Label>
             </div>
