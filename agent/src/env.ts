@@ -45,6 +45,7 @@ export function readEnv(): Env {
   if (!r.success) {
     console.error("cuota: bad environment");
     for (const i of r.error.issues) console.error(`  ${i.path.join(".")}: ${i.message}`);
+    console.error("Copy .env.example to .env and fill it in. The live agent runs at https://cuota-agent.onrender.com");
     process.exit(1);
   }
   return r.data;
