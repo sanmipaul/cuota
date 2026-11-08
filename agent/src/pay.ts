@@ -80,7 +80,13 @@ export function usatPayments(env: Env, db: Db, celo: Celo, fx: Fx, contract: Add
       functionName: "amountDue",
       args: [BigInt(a.id)],
     })) as bigint;
-    const usdt = await fx.previewUsdt(a.token as Address, due);
+    let usdt = await fx.previewUsdt(a.token as Address, due);
+    if (!usdt) {
+      // Textile won't quote dust: price it at the rate for 1,000 units instead (wFIAT has 18 decimals).
+      const ref = 1_000n * 10n ** 18n;
+      const refUsdt = await fx.previewUsdt(a.token as Address, ref);
+      if (refUsdt) usdt = (due * refUsdt) / ref || 1n; // never below one atomic unit of USA₮
+    }
     if (!usdt) throw new Error(`no market price for ${wfiatByAddress(a.token)?.symbol ?? a.token} right now`);
     // USA₮ and USD₮ trade at par on Textile (USAT/USDT ≈ 0.9998); quote in USA₮ 1:1.
     const q = { cycle: a.cycle, usat: usdt, at: now() };
