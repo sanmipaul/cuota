@@ -38,9 +38,16 @@ export function Agreement() {
   });
 
   const data = view.data ?? synced.data;
+  // After the user's own transaction, re-read the chain until the status moves: the agent's RPC
+  // can trail the wallet's by a few blocks, and a wallet can report an error for a tx that landed.
   const refresh = async () => {
-    const fresh = await agent<AgreementView>(`/v1/agreements/${id}/refresh`, { method: "POST" });
-    qc.setQueryData(["agreement", id], fresh);
+    const before = (qc.getQueryData(["agreement", id]) as AgreementView | undefined)?.agreement.status;
+    for (let i = 0; i < 8; i++) {
+      const fresh = await agent<AgreementView>(`/v1/agreements/${id}/refresh`, { method: "POST" }).catch(() => undefined);
+      if (fresh) qc.setQueryData(["agreement", id], fresh);
+      if (fresh && fresh.agreement.status !== before) return;
+      await new Promise((r) => setTimeout(r, 3_000));
+    }
   };
 
   if (!data) {
@@ -257,11 +264,8 @@ function AcceptCard({ id, onDone }: { id: number; onDone: () => Promise<void> })
           disabled={!approved}
           busy={acceptTx.phase === "signing" || acceptTx.phase === "confirming"}
           onClick={async () => {
-            const ok = await acceptTx.send(accept).then(
-              () => true,
-              () => false,
-            );
-            if (ok) await onDone();
+            await acceptTx.send(accept).catch(() => undefined);
+            await onDone();
           }}
         >
           {a.accept}
@@ -285,11 +289,8 @@ function CancelButton({ id, onDone }: { id: number; onDone: () => Promise<void> 
         busy={tx.phase === "signing" || tx.phase === "confirming"}
         onClick={async () => {
           if (!contract || !window.confirm(t.agreement.cancelConfirm)) return;
-          const ok = await tx.send({ to: contract, data: encodeFunctionData({ abi: cuotaAbi, functionName: "cancel", args: [BigInt(id)] }) }).then(
-            () => true,
-            () => false,
-          );
-          if (ok) await onDone();
+          await tx.send({ to: contract, data: encodeFunctionData({ abi: cuotaAbi, functionName: "cancel", args: [BigInt(id)] }) }).catch(() => undefined);
+          await onDone();
         }}
       >
         {t.agreement.cancel}
